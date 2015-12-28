@@ -19,9 +19,9 @@ void toIso(type_Map tMap, int * x, int * y){
 
 	if(tMap == diamond){
 		* x = (* x - * y * 2) / 2;
-		* y = (* x + * y * 2) / 2; 
+		* y = (* x + * y * 2) / 2;
 	}else if(tMap == slide || tMap == staggered){
-		
+
 		if(tMap == slide){
 			* x = (* x + * y);
 		}else{
@@ -38,7 +38,7 @@ void toIso(type_Map tMap, int * x, int * y){
  * @param tMap Type de la carte
  */
 int offsetX(type_Map tMap){
-	
+
 	if(tMap == diamond)
 		return (SCREEN_WIDTH - TILE_W) / 2; // Diamond map
 	else
@@ -150,7 +150,7 @@ int main(){
 
 	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
 
-	/* Start a new context named ingame */
+	// Start a new context named ingame
 	t_context *ingame = SDL_newContext("Tactics Arena", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	for (x = 0; x < N; x++){
@@ -163,37 +163,37 @@ int main(){
 
 			}
 	}
-	
+
 	SDL_generate(ingame);
-	
+
 	x = -1;
 	y = -1;
 
 	while(1){
 		mouseX = SDL_getmousex();
 		mouseY = SDL_getmousey();
-		
+
 		getIndexMap(tMap, mouseX, mouseY, &x, &y);
 
 		if(tmpX != x || tmpY != y){
 			if(x >= 0 && x < N && y >= 0 && y < N){
 				showCursor(ingame, &idCursor, tMap, x, y); // Affiche en surbillance la zone pointée
-				
+
 				tmpX = x;
 				tmpY = y;
 			}
 		}
-		
+
 		SDL_generate(ingame);
 
 		if (SDL_isKeyPressed(SDLK_UP)) {
 
 		}
-		/* If user request exit, we need to quit while() */
+		// If user request exit, we need to quit while()
 		if (SDL_requestExit()) break;
 	}
 
-	/* Cleanup ingame context */
+	// Cleanup ingame context
 	SDL_freeContext(ingame);
 
 	return 0;
