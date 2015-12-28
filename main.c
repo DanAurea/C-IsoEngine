@@ -9,6 +9,11 @@
 
 typedef enum{diamond, staggered, slide}type_Map;
 
+int idCursor = -1; /**< Identifiant du curseur */
+int mX = -1; /**< Position X à t-1 de la souris*/
+int mY = -1; /**< Position Y à t-1 de la souris*/
+
+
 /**
  * Convertis les coordonnées cartésiennes en coordonnées isométriques
  * @param tMap Type de la carte
@@ -114,14 +119,13 @@ void drawTile(t_context * context , type_Map tMap, int posX, int posY){
 }
 
 /**
- * Affiche un curseur à la position pointée
+ * Affiche un curseur à la position indiquée
  * @param context Contexte dans lequel dessiner
- * @param idCursor Identifiant du curseur
  * @param tMap Type de la map
  * @param x Indice X de la map
  * @param y Indice Y de la map
  */
-void showCursor(t_context * context, int * idCursor, type_Map tMap, int x, int y){
+void showCursor(t_context * context, type_Map tMap, int x, int y){
 	int posX, posY;
 
 	posX = x * TILE_W;
@@ -132,20 +136,43 @@ void showCursor(t_context * context, int * idCursor, type_Map tMap, int x, int y
 	posX += offsetX(tMap);
 	posY += offsetY();
 
-	if(* idCursor == - 1){
+	if(idCursor == - 1){
 		SDL_newImage(context, NULL, "cursor.png", posX, posY); // Initialise le curseur si pas encore dessiné
-		* idCursor = context->nbImg - 1;
+		idCursor = context->nbImg - 1;
 	}else{
-		SDL_editImage(context, * idCursor, posX, posY); // Met à jour la position du curseur
+		SDL_editImage(context, idCursor, posX, posY); // Met à jour la position du curseur
+	}
+
+	SDL_generate(context);
+}
+
+/**
+ * Affiche un curseur à la position pointée
+ * @param context Contexte dans lequel dessiner
+ * @param tMap    Type de la map
+ */
+void showMouseCursor(t_context * context, type_Map tMap){
+	int mouseX, mouseY;
+	int x = - 1, y = -1;
+
+	mouseX = SDL_getmousex(); // Récupère la position actuelle X de la souris 
+	mouseY = SDL_getmousey(); // Récupère la position actuelle Y de la souris 
+
+	getIndexMap(tMap, mouseX, mouseY, &x, &y);
+
+	if(x >= 0 && x < N && y >= 0 && y < N && (mX != x || mY != y)){
+			showCursor(context, tMap, x, y); // Affiche en surbillance la zone pointée
+			
+			mX = x; // Stocke la position actuelle X de la souris
+			mY = y; // Stocke la position actuelle Y de la souris
+	}else{
+		SDL_Delay(50);
 	}
 }
 
-
-
 int main(){
-	int x, y, mouseX, mouseY, idCursor = -1;
+	int x, y;
 	int posX = 0, posY = 0;
-	int tmpX = -1, tmpY = -1;
 	type_Map tMap = diamond;
 
 	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
@@ -170,27 +197,15 @@ int main(){
 	y = -1;
 
 	while(1){
-		mouseX = SDL_getmousex();
-		mouseY = SDL_getmousey();
-		
-		getIndexMap(tMap, mouseX, mouseY, &x, &y);
 
-		if(tmpX != x || tmpY != y){
-			if(x >= 0 && x < N && y >= 0 && y < N){
-				showCursor(ingame, &idCursor, tMap, x, y); // Affiche en surbillance la zone pointée
-				
-				tmpX = x;
-				tmpY = y;
-			}
-		}
-		
-		SDL_generate(ingame);
+		showMouseCursor(ingame, tMap);
 
 		if (SDL_isKeyPressed(SDLK_UP)) {
 
 		}
 		/* If user request exit, we need to quit while() */
 		if (SDL_requestExit()) break;
+
 	}
 
 	/* Cleanup ingame context */
