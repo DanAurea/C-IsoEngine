@@ -195,6 +195,5 @@ int main(){
 
 	// Cleanup ingame context
 	SDL_freeContext(ingame);
-
 	return 0;
 }
