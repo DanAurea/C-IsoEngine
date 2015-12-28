@@ -61,14 +61,14 @@ int offsetY(){
  * @param x Pointeur sur l'indice y
  */
 void getIndexMap(type_Map tMap, int posX, int posY, int * x, int * y){
-	
-	posX -= offsetX(tMap);
-	posY -= offsetY();
 
-	* x = ( posX/ (TILE_W/2) + posY/(TILE_H/2)) / 2;
-	* y = ( posY/ (TILE_H/2) - posX/(TILE_W/2)) / 2;
-	
-	printf("x : %i y : %i \n", * x, * y);
+	if(tMap == diamond){
+		posX -= offsetX(tMap) + (TILE_W / 2); // Diamond map
+		posY -= offsetY();
+
+		* x = floor( ( (float)posX/ (TILE_W/2) + (float)posY/(TILE_H/2)) / 2 );
+		* y = floor( ( (float)posY/ (TILE_H/2) - (float)posX/(TILE_W/2)) / 2 );
+	}
 
 }
 
