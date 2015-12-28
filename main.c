@@ -21,19 +21,21 @@ void toIso(type_Map tMap, int * x, int * y){
 		* x = (* x - * y * 2) / 2;
 		* y = (* x + * y * 2) / 2; 
 	}else if(tMap == slide || tMap == staggered){
-		* y = (* y / 2);
 		
 		if(tMap == slide){
 			* x = (* x + * y);
 		}else{
 			* x = * x + ((* y / TILE_H % 2 == 0) ? 0 : 1 ) * (TILE_W/2);
 		}
+
+		* y = (* y / 2);
 	}
 
 }
 
 /**
  * Décalage en X
+ * @param tMap Type de la carte
  */
 int offsetX(type_Map tMap){
 	
@@ -52,18 +54,19 @@ int offsetY(){
 
 /**
  * Récupère les indices x et y de la tile en posX / posY
+ * @param tMap Type de la carte
  * @param posX Coordonnée X pointée
  * @param posY Coordonnée Y pointée
+ * @param x Pointeur sur l'indice x
+ * @param x Pointeur sur l'indice y
  */
 void getIndexMap(type_Map tMap, int posX, int posY, int * x, int * y){
-
-	posX -= offsetX(tMap) + TILE_W / 2; // Diamond map à généraliser
 	
-	//posX -= offsetX(tMap);
+	posX -= offsetX(tMap);
 	posY -= offsetY();
 
-	* x = ( (float) posX/ (TILE_W/2) + (float) posY/(TILE_H/2)) / 2;
-	* y = ( (float) posY/ (TILE_H/2) - (float) posX/(TILE_W/2)) / 2;
+	* x = ( posX/ (TILE_W/2) + posY/(TILE_H/2)) / 2;
+	* y = ( posY/ (TILE_H/2) - posX/(TILE_W/2)) / 2;
 	
 	printf("x : %i y : %i \n", * x, * y);
 
@@ -71,6 +74,8 @@ void getIndexMap(type_Map tMap, int posX, int posY, int * x, int * y){
 
 /**
  * Dessine une tile aux coordonnées posX et posY
+ * @param context Contexte dans lequel dessiner
+ * @param tMap Type de la carte
  * @param posX Coordonnées X de la tile à dessiner
  * @param posY Coordonnées Y de la tile à dessiner
  */
