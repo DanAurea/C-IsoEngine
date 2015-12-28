@@ -7,34 +7,65 @@
 #define TILE_W 96
 #define N 11
 
+typedef enum{diamond, staggered, slide}type_Map;
+
 /**
  * Convertis les coordonnées cartésiennes en coordonnées isométriques
+ * @param tMap Type de la carte
  * @param x Position horizontale cartésienne
  * @param y Position verticale cartésienne
  */
-void toIso(int * x, int * y){
-	* x = (* x - * y * 2) / 2; // Diamond map
-	* y = (* x + * y * 2) / 2; // Diamond map
+void toIso(type_Map tMap, int * x, int * y){
 
-	/** x = (* x + * y); // Slide map
-	* y = (* y / 2); // Slide map*/
+	if(tMap == diamond){
+		* x = (* x - * y * 2) / 2;
+		* y = (* x + * y * 2) / 2; 
+	}else if(tMap == slide || tMap == staggered){
+		* y = (* y / 2);
+		
+		if(tMap == slide){
+			* x = (* x + * y);
+		}else{
+			* x = * x + ((* y / TILE_H % 2 == 0) ? 0 : 1 ) * (TILE_W/2);
+		}
+	}
 
-	/** x = * x + ((* y / TILE_H % 2 == 0) ? 0 : 1 ) * (TILE_W/2); // Staggered map
-	* y = * y / 2; // Staggered map*/
 }
 
 /**
- * Centre la carte au milieu de la fenêtre
- * @param x Position horizontale isométrique
- * @param y Position horizontale isométrique
+ * Décalage en X
  */
-void centerMap(int * x, int * y){
+int offsetX(type_Map tMap){
 	
-	* x += (SCREEN_WIDTH - TILE_W) / 2; // Diamond map
+	if(tMap == diamond)
+		return (SCREEN_WIDTH - TILE_W) / 2; // Diamond map
+	else
+		return (SCREEN_WIDTH - (N + 1)  * TILE_W) / 2; // Slide AND Staggered map
+}
+
+/**
+ * Décalage en Y
+ */
+int offsetY(){
+	return (SCREEN_HEIGHT - N * TILE_H) /2;
+}
+
+/**
+ * Récupère les indices x et y de la tile en posX / posY
+ * @param posX Coordonnée X pointée
+ * @param posY Coordonnée Y pointée
+ */
+void getIndexMap(type_Map tMap, int posX, int posY, int * x, int * y){
+
+	posX -= offsetX(tMap) + TILE_W / 2; // Diamond map à généraliser
 	
-	//*x += (SCREEN_WIDTH - (N + 1)  * TILE_W) / 2; // Slide AND Staggered map
+	//posX -= offsetX(tMap);
+	posY -= offsetY();
+
+	* x = ( (float) posX/ (TILE_W/2) + (float) posY/(TILE_H/2)) / 2;
+	* y = ( (float) posY/ (TILE_H/2) - (float) posX/(TILE_W/2)) / 2;
 	
-	* y += (SCREEN_HEIGHT - N * TILE_H) /2;
+	printf("x : %i y : %i \n", * x, * y);
 
 }
 
@@ -43,16 +74,35 @@ void centerMap(int * x, int * y){
  * @param posX Coordonnées X de la tile à dessiner
  * @param posY Coordonnées Y de la tile à dessiner
  */
-void drawTile(int posX, int posY){
+void drawTile(t_context * context , type_Map tMap, int posX, int posY){
+	int x = posX / TILE_W, y = posY / TILE_H;
 
-}
+	toIso(tMap, &posX, &posY);
 
-/**
- * Récupère les indices x et y de la tile en posX / posY
- * @param mouseX Coordonnées X de la souris
- * @param mouseY Coordonnées Y de la souris
- */
-void getIndexMap(int mouseX, int mouseY){
+	posX += offsetX(tMap);
+	posY += offsetY();
+
+	if(y == N-1 || ( x == 0 && (tMap == slide || tMap == staggered) )){
+		SDL_newImage(context, NULL, "base_Cube.png", posX, posY);
+	}
+
+	if(tMap == diamond){
+		if(x == N-1){
+			SDL_newImage(context, NULL, "base_Cube.png", posX, posY);
+		}else{
+			SDL_newImage(context, NULL, "base_Tile.png", posX, posY);
+		}
+	}else if(tMap == slide){
+		if(x != 0){
+			SDL_newImage(context, NULL, "base_Tile.png", posX, posY);
+		}
+	}else if(tMap == staggered){
+		if((x == N - 1 && y % 2 != 0)){
+			SDL_newImage(context, NULL, "base_Cube.png", posX, posY);
+		}else{
+			SDL_newImage(context, NULL, "base_Tile.png", posX, posY);
+		}
+	}
 
 }
 
@@ -62,13 +112,11 @@ void getIndexMap(int mouseX, int mouseY){
  * @param mouseY Coordonnées Y de la souris
  */
 void showCursor(int mouseX, int mouseY){
-	posX = SDL_getmousex();
-	posY = SDL_getmousey();
-
+	
 }
 
 int main(){
-	int x, y, tmpX, tmpY;
+	int x, y, mouseX, mouseY;
 	int posX = 0, posY = 0;
 
 	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
@@ -79,30 +127,10 @@ int main(){
 	for (x = 0; x < N; x++){
 			for (y = 0; y < N; y++){
 
-				posX =  x * TILE_W; // Diamond
-				posY =  y * TILE_H; //Diamond
+				posX =  x * TILE_W;
+				posY =  y * TILE_H;
 
-				toIso(&posX, &posY);
-
-				centerMap(&posX, &posY);
-
-				if(x == N-1 || y == N-1){
-					SDL_newImage(ingame, NULL, "base_Cube.png", posX, posY);
-				}else{
-					SDL_newImage(ingame, NULL, "base_Tile.png", posX, posY);
-				} // Diamond map
-
-				/*if(x == 0 || y == N-1){
-					SDL_newImage(ingame, NULL, "base_Cube.png", posX, posY);
-				}else{
-					SDL_newImage(ingame, NULL, "base_Tile.png", posX, posY);
-				}*/ // Slide map
-
-				/*if(x == 0 || y == N-1 || (x == N - 1 && y % 2 != 0) ){
-					SDL_newImage(ingame, NULL, "base_Cube.png", posX, posY);
-				}else{
-					SDL_newImage(ingame, NULL, "base_Tile.png", posX, posY);
-				}*/ // Staggered map
+				drawTile(ingame, diamond, posX, posY);
 
 			}
 	}
@@ -110,10 +138,12 @@ int main(){
 	SDL_generate(ingame);
 
 	while(1){
-		showCursor();
+		mouseX = SDL_getmousex();
+		mouseY = SDL_getmousey();
+		
+		getIndexMap(diamond, mouseX, mouseY, &x, &y);
 
-
-		//SDL_newImage(ingame, NULL, "cursor.png", posX, posY);
+		showCursor(mouseX, mouseY); // Affiche en surbillance la zone pointée
 		
 		SDL_generate(ingame);
 
