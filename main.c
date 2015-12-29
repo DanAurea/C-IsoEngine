@@ -215,179 +215,53 @@ void drawMap(t_context * context, type_Map tMap){
 }
 
 /**
- * Glisse un objet
- * @param  context Contexte dans lequel glisser
- * @param  typeObj Type de l'objet à glisser
- * @param  idObj   Identifiant de l'objet
- * @return         Retourne 1 en cas de succés, -1 le cas échéant
+ * Glisser et déposer
+ * @param context Contexte dans lequel dessiner
+ * @param tMap    Type de la carte
  */
-int drag(t_context * context, t_typeData typeObj, int idObj){
-	int posX = - 1, posY = - 1, mouseX = SDL_getmousex(), mouseY = SDL_getmousey();
-	int generate = -1, zoneM = 10; // Zone d'erreur de la souris pour plus de précision
+void dragNdrop(t_context * context, type_Map tMap){
+	int x, y, posX, posY;
+	int mousePressed = SDL_isMousePressed(SDL_BUTTON_LEFT);
+	int overObj = -1;
 
-	switch (typeObj) {
-	
-		case IMG:
-		
-			if (!(context->contextImg) || !(context->nbImg)) return -1;
-
-			if(idObj <= context->nbImg - 1){
-				posX = context->contextImg[idObj].x + context->contextImg[idObj].buffer->w / 2;;
-				posY = context->contextImg[idObj].y + context->contextImg[idObj].buffer->h / 2;;
-
-				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
-					SDL_editImage(context, idObj, mouseX - context->contextImg[idObj].buffer->w / 2, mouseY - context->contextImg[idObj].buffer->h / 2);
-					generate = 1;
+	if(mousePressed){ // Clic sur une zone
+			overObj = SDL_ismouseover(context, SPRITE);
+			
+			if(overObj >= 0){
+				while(mousePressed){
+					drag(context, SPRITE, overObj); // Glisse l'objet
+					SDL_Delay(40);
+					mousePressed = SDL_isMousePressed(SDL_BUTTON_LEFT);
 				}
 
-			}else{
-				return -1;
+				mousePressed = -1;
 			}
-			
-			break;
-		
-		case TEXT:
-			
-			if (!(context->contextText) || !(context->nbText)) return -1;
-			
-			if(idObj <= context->nbText - 1){
-				posX = context->contextText[idObj].x + context->contextText[idObj].buffer->w / 2;
-				posY = context->contextText[idObj].y + context->contextText[idObj].buffer->h / 2;;
 
-				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
-					SDL_editText(context, idObj, context->contextText[idObj].content, context->contextText[idObj].couleur, mouseX - context->contextText[idObj].buffer->w / 2, mouseY - context->contextText[idObj].buffer->h / 2);
-					generate = 1;
-				}
-			}else{
-				return -1;
-			}
-			
-			break;
-
-		case SPRITE:
-			
-			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
-			
-			if(idObj <= context->nbSprite - 1){
-				posX = context->contextSprite[idObj].x + context->contextSprite[idObj].buffer->w / 2;
-				posY = context->contextSprite[idObj].y + context->contextSprite[idObj].buffer->h / 2;
-
-				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
-					
-					SDL_editSprite(context, idObj, mouseX - context->contextSprite[idObj].buffer->w / 2, mouseY - context->contextSprite[idObj].buffer->h / 2, 
-									context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
-					generate = 1;
-				}
-			}else{
-				return -1;
-			}
-			
-			break;
-			
-		case RECTANGLE:
-			
-			if (!(context->contextRect) || !(context->nbRect)) return -1;
-			
-			if(idObj <= context->nbRect - 1){
-				posX = context->contextRect[idObj].def.x + context->contextRect[idObj].def.w / 2;;
-				posY = context->contextRect[idObj].def.y + context->contextRect[idObj].def.h / 2;;
-
-				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
-					SDL_editRect(context, idObj,  context->contextRect[idObj].color, context->contextRect[idObj].def.h, context->contextRect[idObj].def.w, mouseX - context->contextRect[idObj].def.w / 2, mouseY - context->contextRect[idObj].def.h / 2);
-					generate = 1;
-				}
-			}else{
-				return -1;
-			}
-			
-			break;
-		
-		default:
-			return -1;
-			break;
-	}
-	
-	if(generate == 1){
-		SDL_generate(context);
 	}
 
-	return 1;
-}
+	if(mousePressed == - 1){ // Objet relaché
 
-/**
- * Dépose un objet
- * @param context Contexte dans lequel déposer
- * @param typeObj Type de l'objet
- * @param idObj   Identifiant de l'objet
- * @param posX    Position X où déposer l'objet
- * @param posY    Position Y où déposer l'objet
- * @return 		  Retourne 1 en cas de succés, -1 le cas échéant
- */
-int drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY){
+		if(overObj >= 0){
+			getIndexMap(tMap, SDL_getmousex(), SDL_getmousey() + context->contextSprite[overObj].buffer->h / 3, &x, &y);
 
-	switch (typeObj) {
-	
-		case IMG:
-		
-			if (!(context->contextImg) || !(context->nbImg)) return -1;
-			
-			if(idObj <= context->nbImg - 1){
-				SDL_editImage(context, idObj, posX, posY);
-			}else{
-				return -1;
-			}
-			
-			break;
-		
-		case TEXT:
-			
-			if (!(context->contextText) || !(context->nbText)) return -1;
-			
-			if(idObj <= context->nbText - 1){
-				SDL_editText(context, idObj, context->contextText[idObj].content, context->contextText[idObj].couleur, posX, posY);
-			}else{
-				return -1;
-			}
-			
-			break;
+			posX = x * TILE_W;
+			posY = y * TILE_H;
 
-		case SPRITE:
-			
-			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
-			
-			if(idObj <= context->nbSprite - 1){
-				SDL_editSprite(context, idObj, posX, posY, context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
-			}else{
-				return -1;
-			}
-			
-			break;
-			
-		case RECTANGLE:
-			
-			if (!(context->contextRect) || !(context->nbRect)) return -1;
-			
-			if(idObj <= context->nbRect - 1){
-				SDL_editRect(context, idObj,  context->contextRect[idObj].color, context->contextRect[idObj].def.h, context->contextRect[idObj].def.w, posX, posY);
-			}else{
-				return -1;
-			}
-			
-			break;
-		
-		default:
-			return -1;
-			break;
+			toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
+
+			posX += offsetX(tMap);
+			posY += offsetY() - context->contextSprite[overObj].buffer->h / 2;
+
+			drop(context, SPRITE, overObj, posX, posY); // Dépose l'objet
+			SDL_generate(context);
+		}
 	}
-	
 
-	return 1;
+	SDL_Delay(65);
 }
 
 int main(){
 	type_Map tMap = diamond;
-	int x, y, posX, posY;
-	int overObj = -1;
 
 	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
 
@@ -402,36 +276,7 @@ int main(){
 
 	while(1){
 
-		if(SDL_isMousePressed(SDL_BUTTON_LEFT)){
-			overObj = SDL_ismouseover(ingame, SPRITE);
-			
-			if(overObj >= 0){
-				while(SDL_isMousePressed(SDL_BUTTON_LEFT)){
-					drag(ingame, SPRITE, overObj);
-					SDL_Delay(40);
-				}
-			}
-
-		}else{
-
-			if(overObj >= 0){
-				getIndexMap(tMap, SDL_getmousex(), SDL_getmousey(), &x, &y);
-
-				posX = x * TILE_W;
-				posY = y * TILE_H;
-
-				toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
-
-				posX += offsetX(tMap);
-				posY += offsetY() - HEIGHT_DECOR / 2;
-
-				drop(ingame, SPRITE, overObj, posX, posY);
-				SDL_generate(ingame);
-			}
-
-			SDL_Delay(50);
-			overObj = -1;
-		}
+		dragNdrop(ingame, diamond);
 
 		if (SDL_isKeyPressed(SDLK_UP)) {
 
