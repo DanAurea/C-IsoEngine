@@ -188,15 +188,14 @@ void showMouseCursor(t_context * context, type_Map tMap){
 	}
 }
 
-int main(){
+/**
+ * Dessine une carte
+ * @param context Contexte dans lequel dessiner
+ * @param tMap    Type de la map
+ */
+void drawMap(t_context * context, type_Map tMap){
 	int x, y;
 	int posX = 0, posY = 0;
-	type_Map tMap = diamond;
-
-	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
-
-	// Start a new context named ingame
-	t_context *ingame = SDL_newContext("Tactics Arena", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	for (x = 0; x < N; x++){
 			for (y = 0; y < N; y++){
@@ -204,20 +203,207 @@ int main(){
 				posX =  x * TILE_W;
 				posY =  y * TILE_H;
 
-				drawTile(ingame, tMap, posX, posY);
+				drawTile(context, tMap, posX, posY);
 
 				if(x % 2 == 0 && y % 2 == 0){
-					drawDecor(ingame, tMap, posX, posY);
+					drawDecor(context, tMap, posX, posY);
 				}
 
 			}
 	}
 
+}
+
+/**
+ * Glisse un objet
+ * @param  context Contexte dans lequel glisser
+ * @param  typeObj Type de l'objet à glisser
+ * @param  idObj   Identifiant de l'objet
+ * @return         Retourne 1 en cas de succés, -1 le cas échéant
+ */
+int drag(t_context * context, t_typeData typeObj, int idObj){
+
+	switch (typeObj) {
+	
+		case IMG:
+		
+			if (!(context->contextImg) || !(context->nbImg)) return -1;
+			
+			if(idObj <= context->nbImg - 1){
+				SDL_editImage(context, idObj, SDL_getmousex() - context->contextImg[idObj].buffer->w / 2, SDL_getmousey() - context->contextImg[idObj].buffer->h / 2);
+			}else{
+				return -1;
+			}
+			
+			break;
+		
+		case TEXT:
+			
+			if (!(context->contextText) || !(context->nbText)) return -1;
+			
+			if(idObj <= context->nbText - 1){
+				SDL_editText(context, idObj, context->contextText[idObj].content, context->contextText[idObj].couleur, SDL_getmousex() - context->contextText[idObj].buffer->w / 2, SDL_getmousey() - context->contextText[idObj].buffer->h / 2);
+			}else{
+				return -1;
+			}
+			
+			break;
+
+		case SPRITE:
+			
+			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
+			
+			if(idObj <= context->nbSprite - 1){
+				SDL_editSprite(context, idObj, SDL_getmousex() - context->contextSprite[idObj].buffer->w / 2, SDL_getmousey() - context->contextSprite[idObj].buffer->h / 2, 
+					context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
+			}else{
+				return -1;
+			}
+			
+			break;
+			
+		case RECTANGLE:
+			
+			if (!(context->contextRect) || !(context->nbRect)) return -1;
+			
+			if(idObj <= context->nbRect - 1){
+				SDL_editRect(context, idObj,  context->contextRect[idObj].color, context->contextRect[idObj].def.h, context->contextRect[idObj].def.w, SDL_getmousex() - context->contextRect[idObj].def.w / 2, SDL_getmousey() - context->contextRect[idObj].def.h / 2);
+			}else{
+				return -1;
+			}
+			
+			break;
+		
+		default:
+			return -1;
+			break;
+	}
+	
+	SDL_generate(context);
+
+	return 1;
+}
+
+/**
+ * Dépose un objet
+ * @param context Contexte dans lequel déposer
+ * @param typeObj Type de l'objet
+ * @param idObj   Identifiant de l'objet
+ * @param posX    Position X où déposer l'objet
+ * @param posY    Position Y où déposer l'objet
+ * @return 		  Retourne 1 en cas de succés, -1 le cas échéant
+ */
+int drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY){
+
+	switch (typeObj) {
+	
+		case IMG:
+		
+			if (!(context->contextImg) || !(context->nbImg)) return -1;
+			
+			if(idObj <= context->nbImg - 1){
+				SDL_editImage(context, idObj, posX, posY);
+			}else{
+				return -1;
+			}
+			
+			break;
+		
+		case TEXT:
+			
+			if (!(context->contextText) || !(context->nbText)) return -1;
+			
+			if(idObj <= context->nbText - 1){
+				SDL_editText(context, idObj, context->contextText[idObj].content, context->contextText[idObj].couleur, posX, posY);
+			}else{
+				return -1;
+			}
+			
+			break;
+
+		case SPRITE:
+			
+			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
+			
+			if(idObj <= context->nbSprite - 1){
+				SDL_editSprite(context, idObj, posX, posY, context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
+			}else{
+				return -1;
+			}
+			
+			break;
+			
+		case RECTANGLE:
+			
+			if (!(context->contextRect) || !(context->nbRect)) return -1;
+			
+			if(idObj <= context->nbRect - 1){
+				SDL_editRect(context, idObj,  context->contextRect[idObj].color, context->contextRect[idObj].def.h, context->contextRect[idObj].def.w, posX, posY);
+			}else{
+				return -1;
+			}
+			
+			break;
+		
+		default:
+			return -1;
+			break;
+	}
+	
+
+	return 1;
+}
+
+int main(){
+	type_Map tMap = diamond;
+	int x, y, posX, posY;
+	int overObj = -1;
+
+	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
+
+	// Start a new context named ingame
+	t_context *ingame = SDL_newContext("Tactics Arena", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	drawMap(ingame, tMap);
+
+	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+
 	SDL_generate(ingame);
 
 	while(1){
 
-		showMouseCursor(ingame, tMap);
+		if(SDL_isMousePressed(SDL_BUTTON_LEFT)){
+			overObj = SDL_ismouseover(ingame, SPRITE);
+			
+			if(overObj >= 0){
+				while(SDL_isMousePressed(SDL_BUTTON_LEFT)){
+					drag(ingame, SPRITE, overObj);
+					SDL_Delay(40);
+				}
+			}
+
+		}else{
+
+			if(overObj >= 0){
+				getIndexMap(tMap, SDL_getmousex(), SDL_getmousey(), &x, &y);
+
+				posX = x * TILE_W;
+				posY = y * TILE_H;
+
+				toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
+
+				posX += offsetX(tMap);
+				posY += offsetY() - HEIGHT_DECOR / 2;
+
+				drop(ingame, SPRITE, overObj, posX, posY);
+			}
+
+			overObj = -1;
+		}
+
+		SDL_generate(ingame);
+
+		SDL_Delay(40);
 
 		if (SDL_isKeyPressed(SDLK_UP)) {
 
