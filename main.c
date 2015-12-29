@@ -3,6 +3,7 @@
 
 #define SCREEN_WIDTH 1280 /**< Largeur de la fenêtre */
 #define SCREEN_HEIGHT 720 /**< Hauteur de la fenêtre */
+#define HEIGHT_DECOR 82 /**< Hauteur d'un décor */
 #define TILE_H 48 /**< Hauteur d'une tile */
 #define TILE_W 96 /**< Largeur d'une tile */
 #define N 11 /**< Taille de la map */
@@ -89,7 +90,7 @@ void getIndexMap(type_Map tMap, int posX, int posY, int * x, int * y){
 void drawTile(t_context * context , type_Map tMap, int posX, int posY){
 	int x = posX / TILE_W, y = posY / TILE_H;
 
-	toIso(tMap, &posX, &posY);
+	toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
 
 	posX += offsetX(tMap);
 	posY += offsetY();
@@ -116,6 +117,23 @@ void drawTile(t_context * context , type_Map tMap, int posX, int posY){
 		}
 	}
 
+}
+
+/**
+ * Dessine un décor
+ * @param context Contexte dans lequel dessiner
+ * @param tMap    Type de la map
+ * @param posX Coordonnées X de la tile à dessiner
+ * @param posY Coordonnées Y de la tile à dessiner
+ */
+void drawDecor(t_context * context , type_Map tMap, int posX, int posY){
+	
+	toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
+
+	posX += offsetX(tMap);
+	posY += offsetY() - HEIGHT_DECOR / 2;
+
+	SDL_newImage(context, NULL, "rock.png", posX, posY);
 }
 
 /**
@@ -187,6 +205,10 @@ int main(){
 				posY =  y * TILE_H;
 
 				drawTile(ingame, tMap, posX, posY);
+
+				if(x % 2 == 0 && y % 2 == 0){
+					drawDecor(ingame, tMap, posX, posY);
+				}
 
 			}
 	}
