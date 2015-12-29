@@ -222,15 +222,24 @@ void drawMap(t_context * context, type_Map tMap){
  * @return         Retourne 1 en cas de succés, -1 le cas échéant
  */
 int drag(t_context * context, t_typeData typeObj, int idObj){
+	int posX = - 1, posY = - 1, mouseX = SDL_getmousex(), mouseY = SDL_getmousey();
+	int generate = -1, zoneM = 10; // Zone d'erreur de la souris pour plus de précision
 
 	switch (typeObj) {
 	
 		case IMG:
 		
 			if (!(context->contextImg) || !(context->nbImg)) return -1;
-			
+
 			if(idObj <= context->nbImg - 1){
-				SDL_editImage(context, idObj, SDL_getmousex() - context->contextImg[idObj].buffer->w / 2, SDL_getmousey() - context->contextImg[idObj].buffer->h / 2);
+				posX = context->contextImg[idObj].x + context->contextImg[idObj].buffer->w / 2;;
+				posY = context->contextImg[idObj].y + context->contextImg[idObj].buffer->h / 2;;
+
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+					SDL_editImage(context, idObj, mouseX - context->contextImg[idObj].buffer->w / 2, mouseY - context->contextImg[idObj].buffer->h / 2);
+					generate = 1;
+				}
+
 			}else{
 				return -1;
 			}
@@ -242,7 +251,13 @@ int drag(t_context * context, t_typeData typeObj, int idObj){
 			if (!(context->contextText) || !(context->nbText)) return -1;
 			
 			if(idObj <= context->nbText - 1){
-				SDL_editText(context, idObj, context->contextText[idObj].content, context->contextText[idObj].couleur, SDL_getmousex() - context->contextText[idObj].buffer->w / 2, SDL_getmousey() - context->contextText[idObj].buffer->h / 2);
+				posX = context->contextText[idObj].x + context->contextText[idObj].buffer->w / 2;
+				posY = context->contextText[idObj].y + context->contextText[idObj].buffer->h / 2;;
+
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+					SDL_editText(context, idObj, context->contextText[idObj].content, context->contextText[idObj].couleur, mouseX - context->contextText[idObj].buffer->w / 2, mouseY - context->contextText[idObj].buffer->h / 2);
+					generate = 1;
+				}
 			}else{
 				return -1;
 			}
@@ -254,8 +269,15 @@ int drag(t_context * context, t_typeData typeObj, int idObj){
 			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
 			
 			if(idObj <= context->nbSprite - 1){
-				SDL_editSprite(context, idObj, SDL_getmousex() - context->contextSprite[idObj].buffer->w / 2, SDL_getmousey() - context->contextSprite[idObj].buffer->h / 2, 
-					context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
+				posX = context->contextSprite[idObj].x + context->contextSprite[idObj].buffer->w / 2;
+				posY = context->contextSprite[idObj].y + context->contextSprite[idObj].buffer->h / 2;
+
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+					
+					SDL_editSprite(context, idObj, mouseX - context->contextSprite[idObj].buffer->w / 2, mouseY - context->contextSprite[idObj].buffer->h / 2, 
+									context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
+					generate = 1;
+				}
 			}else{
 				return -1;
 			}
@@ -267,7 +289,13 @@ int drag(t_context * context, t_typeData typeObj, int idObj){
 			if (!(context->contextRect) || !(context->nbRect)) return -1;
 			
 			if(idObj <= context->nbRect - 1){
-				SDL_editRect(context, idObj,  context->contextRect[idObj].color, context->contextRect[idObj].def.h, context->contextRect[idObj].def.w, SDL_getmousex() - context->contextRect[idObj].def.w / 2, SDL_getmousey() - context->contextRect[idObj].def.h / 2);
+				posX = context->contextRect[idObj].def.x + context->contextRect[idObj].def.w / 2;;
+				posY = context->contextRect[idObj].def.y + context->contextRect[idObj].def.h / 2;;
+
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+					SDL_editRect(context, idObj,  context->contextRect[idObj].color, context->contextRect[idObj].def.h, context->contextRect[idObj].def.w, mouseX - context->contextRect[idObj].def.w / 2, mouseY - context->contextRect[idObj].def.h / 2);
+					generate = 1;
+				}
 			}else{
 				return -1;
 			}
@@ -279,7 +307,9 @@ int drag(t_context * context, t_typeData typeObj, int idObj){
 			break;
 	}
 	
-	SDL_generate(context);
+	if(generate == 1){
+		SDL_generate(context);
+	}
 
 	return 1;
 }
@@ -396,14 +426,12 @@ int main(){
 				posY += offsetY() - HEIGHT_DECOR / 2;
 
 				drop(ingame, SPRITE, overObj, posX, posY);
+				SDL_generate(ingame);
 			}
 
+			SDL_Delay(50);
 			overObj = -1;
 		}
-
-		SDL_generate(ingame);
-
-		SDL_Delay(40);
 
 		if (SDL_isKeyPressed(SDLK_UP)) {
 
