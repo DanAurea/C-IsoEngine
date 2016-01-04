@@ -14,7 +14,6 @@ int idCursor = -1; /**< Identifiant du curseur */
 int mX = -1; /**< Position X à t-1 de la souris*/
 int mY = -1; /**< Position Y à t-1 de la souris*/
 
-
 /**
  * Convertis les coordonnées cartésiennes en coordonnées isométriques
  * @param tMap Type de la carte
@@ -229,7 +228,7 @@ void dragNdrop(t_context * context, type_Map tMap){
 			
 			if(overObj >= 0){
 				while(mousePressed){
-					drag(context, SPRITE, overObj); // Glisse l'objet
+					SDL_Drag(context, SPRITE, overObj); // Glisse l'objet
 					SDL_Delay(40);
 					mousePressed = SDL_isMousePressed(SDL_BUTTON_LEFT);
 				}
@@ -252,7 +251,7 @@ void dragNdrop(t_context * context, type_Map tMap){
 			posX += offsetX(tMap);
 			posY += offsetY() - context->contextSprite[overObj].buffer->h / 2;
 
-			drop(context, SPRITE, overObj, posX, posY); // Dépose l'objet
+			SDL_Drop(context, SPRITE, overObj, posX, posY); // Dépose l'objet
 			SDL_generate(context);
 		}
 	}
@@ -261,6 +260,7 @@ void dragNdrop(t_context * context, type_Map tMap){
 }
 
 int main(){
+	int x = 0, y = 0;
 	type_Map tMap = diamond;
 
 	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
@@ -270,14 +270,18 @@ int main(){
 
 	drawMap(ingame, tMap);
 
-	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+	//SDL_delSprite(ingame, 0);
+	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
 
 	SDL_generate(ingame);
 
 	while(1){
 
 		dragNdrop(ingame, diamond);
-
+		getIndexMap(tMap, SDL_getmousex(), SDL_getmousey() , &x, &y);
+		printf("x: %i y: %i\n", x, y);
 		if (SDL_isKeyPressed(SDLK_UP)) {
 
 		}
