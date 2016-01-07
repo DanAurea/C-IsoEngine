@@ -7,9 +7,6 @@
 #define TILE_H 48 /**< Hauteur d'une tile */
 #define TILE_W 96 /**< Largeur d'une tile */
 
-#define SPRITE_H 96
-#define SPRITE_W 96
-
 #define N 11 /**< Taille de la map */
 
 typedef enum{diamond, staggered, slide}type_Map;
@@ -270,7 +267,7 @@ void moveSpriteTo(t_context * context, type_Map tMap, char to[], int idSprite ){
 	int pixelByAnim = 10; // TWEAK HERE : nombre de pixel par animation
 
 	int currentAnim = context->contextSprite[idSprite].animation; // animation actuelle
-	int maxAnimSet = (context->contextSprite[idSprite].buffer->w / SPRITE_W); // calcul ne nombre d'animation pour faire le boucle
+	int maxAnimSet = (context->contextSprite[idSprite].buffer->w / context->contextSprite[idSprite].sp_width); // calcul ne nombre d'animation pour faire le boucle
 	int nbAnim = 0;
 
 	while (nbAnim != nbAnimMax) {
@@ -286,8 +283,8 @@ void moveSpriteTo(t_context * context, type_Map tMap, char to[], int idSprite ){
 		}
 
 		nbAnim++;
-		if (currentAnim > maxAnimSet) {
-			currentAnim = 1;
+		if (currentAnim+1 > maxAnimSet) {
+			currentAnim = 0;
 		}
 
 		SDL_generate(context);
@@ -309,7 +306,7 @@ int main(){
 
 	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
 
-	SDL_newSprite(ingame, "drag.png", colorGreenLight, SPRITE_H, SPRITE_W, offsetX(tMap), offsetY() / 2, 1, 1, 0);
+	SDL_newSprite(ingame, "drag.png", colorGreenLight, 96, 96, offsetX(tMap), offsetY() / 2, 1, 1, 0);
 	int id = (ingame->nbSprite)-1;
 
 	SDL_generate(ingame);
