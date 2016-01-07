@@ -7,8 +7,8 @@
 #define TILE_H 48 /**< Hauteur d'une tile */
 #define TILE_W 96 /**< Largeur d'une tile */
 
-#define SPRITE_H 97
-#define SPRITE_W 97
+#define SPRITE_H 96
+#define SPRITE_W 96
 
 #define N 11 /**< Taille de la map */
 
@@ -264,29 +264,37 @@ void dragNdrop(t_context * context, type_Map tMap){
 
 }
 
+void moveSpriteTo(t_context * context, type_Map tMap, char to[], int idSprite ){
 
-void moveSpriteTo(t_context * context, type_Map tMap, int posX, int posY, int idSprite ){
+	int nbAnimMax = 5; // TWEAK HERE : nombre d'animation pour parcourir 1 case
+	int pixelByAnim = 10; // TWEAK HERE : nombre de pixel par animation
 
-	int currentAnim = context->contextSprite[idSprite].animation;
-	int maxAnimSet = (context->contextSprite[idSprite].buffer->w / SPRITE_W);
-	fprintf(stderr, "%i\n", maxAnimSet);
+	int currentAnim = context->contextSprite[idSprite].animation; // animation actuelle
+	int maxAnimSet = (context->contextSprite[idSprite].buffer->w / SPRITE_W); // calcul ne nombre d'animation pour faire le boucle
+	int nbAnim = 0;
 
-	posX*= TILE_W;
-	posY*= TILE_H;
-	toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
-	posX += offsetX(tMap);
-	posY += offsetY() / 2; // Pour avoir le perso bien comme il faut sur la map
+	while (nbAnim != nbAnimMax) {
 
+		if(!strcmp(to,"UP_LEFT")){
+    	SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut gauche
+		}else if(!strcmp(to,"UP_RIGHT")){
+	    SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut droite
+		}else if(!strcmp(to,"DOWN_LEFT")){
+			SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 2, ++currentAnim, 0); //bas gauche
+		}else if(!strcmp(to,"DOWN_RIGHT")){
+	    SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 3, ++currentAnim, 0); //bas droite
+		}
 
-	SDL_editSprite(context, idSprite, posX, posY, 2, ++currentAnim, 0);
-	SDL_generate(context);
+		nbAnim++;
+		if (currentAnim > maxAnimSet) {
+			currentAnim = 1;
+		}
 
-	if (currentAnim > maxAnimSet) {
-		SDL_editSprite(context, idSprite, posX, posY, 2, 0, 0);
-		fprintf(stderr, "%s\n", "end");
+		SDL_generate(context);
+		SDL_Delay(400);
 	}
-
 }
+
 
 int main(){
 	int x = 0, y = 0;
@@ -304,19 +312,12 @@ int main(){
 	SDL_newSprite(ingame, "drag.png", colorGreenLight, SPRITE_H, SPRITE_W, offsetX(tMap), offsetY() / 2, 1, 1, 0);
 	int id = (ingame->nbSprite)-1;
 
-	moveSpriteTo(ingame, tMap, 0, 0, 1);
-	SDL_Delay(1000);
-	moveSpriteTo(ingame, tMap, 0, 1, 1);
-	SDL_Delay(1000);
-	moveSpriteTo(ingame, tMap, 0, 2, 1);
-	SDL_Delay(1000);
-	moveSpriteTo(ingame, tMap, 0, 3, 1);
-	SDL_Delay(1000);
-	moveSpriteTo(ingame, tMap, 0, 4, 1);
-	SDL_Delay(1000);
-	moveSpriteTo(ingame, tMap, 0, 5, 1);
+	SDL_generate(ingame);
 
-
+	moveSpriteTo(ingame, tMap, "DOWN_RIGHT", id );
+	moveSpriteTo(ingame, tMap, "DOWN_LEFT", id );
+	moveSpriteTo(ingame, tMap, "UP_LEFT", id );
+	moveSpriteTo(ingame, tMap, "UP_RIGHT", id );
 
 	while(1){
 
