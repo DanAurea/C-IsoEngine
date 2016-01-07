@@ -228,8 +228,8 @@ void dragNdrop(t_context * context, type_Map tMap){
 			
 			if(overObj >= 0){
 				while(mousePressed){
-					SDL_Drag(context, SPRITE, overObj); // Glisse l'objet
-					SDL_Delay(40);
+					SDL_drag(context, SPRITE, overObj); // Glisse l'objet
+					SDL_Delay(20);
 					mousePressed = SDL_isMousePressed(SDL_BUTTON_LEFT);
 				}
 
@@ -241,7 +241,7 @@ void dragNdrop(t_context * context, type_Map tMap){
 	if(mousePressed == - 1){ // Objet relaché
 
 		if(overObj >= 0){
-			getIndexMap(tMap, SDL_getmousex(), SDL_getmousey() + context->contextSprite[overObj].buffer->h / 3, &x, &y);
+			getIndexMap(tMap, SDL_getmousex(), SDL_getmousey(), &x, &y);
 
 			posX = x * TILE_W;
 			posY = y * TILE_H;
@@ -249,14 +249,15 @@ void dragNdrop(t_context * context, type_Map tMap){
 			toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
 
 			posX += offsetX(tMap);
-			posY += offsetY() - context->contextSprite[overObj].buffer->h / 2;
+			posY += offsetY() - context->contextSprite[overObj].sp_height / 2;
 
-			SDL_Drop(context, SPRITE, overObj, posX, posY); // Dépose l'objet
+			SDL_drop(context, SPRITE, overObj, posX, posY); // Dépose l'objet
 			SDL_generate(context);
 		}
+	}else{
+		SDL_Delay(20);
 	}
 
-	SDL_Delay(65);
 }
 
 int main(){
@@ -270,10 +271,9 @@ int main(){
 
 	drawMap(ingame, tMap);
 
-	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
-	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
-	//SDL_delSprite(ingame, 0);
-	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+	SDL_delSprite(ingame, 0);
 
 	SDL_generate(ingame);
 
