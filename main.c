@@ -6,6 +6,10 @@
 #define HEIGHT_DECOR 82 /**< Hauteur d'un décor */
 #define TILE_H 48 /**< Hauteur d'une tile */
 #define TILE_W 96 /**< Largeur d'une tile */
+
+#define SPRITE_H 97
+#define SPRITE_W 97
+
 #define N 11 /**< Taille de la map */
 
 typedef enum{diamond, staggered, slide}type_Map;
@@ -126,7 +130,7 @@ void drawTile(t_context * context , type_Map tMap, int posX, int posY){
  * @param posY Coordonnées Y de la tile à dessiner
  */
 void drawDecor(t_context * context , type_Map tMap, int posX, int posY){
-	
+
 	toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
 
 	posX += offsetX(tMap);
@@ -172,14 +176,14 @@ void showMouseCursor(t_context * context, type_Map tMap){
 	int mouseX, mouseY;
 	int x = - 1, y = -1;
 
-	mouseX = SDL_getmousex(); // Récupère la position actuelle X de la souris 
-	mouseY = SDL_getmousey(); // Récupère la position actuelle Y de la souris 
+	mouseX = SDL_getmousex(); // Récupère la position actuelle X de la souris
+	mouseY = SDL_getmousey(); // Récupère la position actuelle Y de la souris
 
 	getIndexMap(tMap, mouseX, mouseY, &x, &y);
 
 	if(x >= 0 && x < N && y >= 0 && y < N && (mX != x || mY != y)){
 			showCursor(context, tMap, x, y); // Affiche en surbillance la zone pointée
-			
+
 			mX = x; // Stocke la position actuelle X de la souris
 			mY = y; // Stocke la position actuelle Y de la souris
 	}else{
@@ -225,10 +229,10 @@ void dragNdrop(t_context * context, type_Map tMap){
 
 	if(mousePressed){ // Clic sur une zone
 			overObj = SDL_ismouseover(context, SPRITE);
-			
+
 			if(overObj >= 0){
 				while(mousePressed){
-					SDL_Drag(context, SPRITE, overObj); // Glisse l'objet
+					SDL_drag(context, SPRITE, overObj); // Glisse l'objet
 					SDL_Delay(40);
 					mousePressed = SDL_isMousePressed(SDL_BUTTON_LEFT);
 				}
@@ -251,12 +255,36 @@ void dragNdrop(t_context * context, type_Map tMap){
 			posX += offsetX(tMap);
 			posY += offsetY() - context->contextSprite[overObj].buffer->h / 2;
 
-			SDL_Drop(context, SPRITE, overObj, posX, posY); // Dépose l'objet
+			SDL_drop(context, SPRITE, overObj, posX, posY); // Dépose l'objet
 			SDL_generate(context);
 		}
 	}
 
 	SDL_Delay(65);
+}
+
+
+void moveSpriteTo(t_context * context, type_Map tMap, int posX, int posY, int idSprite ){
+
+	int currentAnim = context->contextSprite[idSprite].animation;
+	int maxAnimSet = (context->contextSprite[idSprite].buffer->w / SPRITE_W);
+	fprintf(stderr, "%i\n", maxAnimSet);
+
+	posX*= TILE_W;
+	posY*= TILE_H;
+	toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
+	posX += offsetX(tMap);
+	posY += offsetY() / 2; // Pour avoir le perso bien comme il faut sur la map
+
+
+	SDL_editSprite(context, idSprite, posX, posY, 2, ++currentAnim, 0);
+	SDL_generate(context);
+
+	if (currentAnim > maxAnimSet) {
+		SDL_editSprite(context, idSprite, posX, posY, 2, 0, 0);
+		fprintf(stderr, "%s\n", "end");
+	}
+
 }
 
 int main(){
@@ -270,22 +298,36 @@ int main(){
 
 	drawMap(ingame, tMap);
 
-	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
-	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
-	//SDL_delSprite(ingame, 0);
-	//SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
 
-	SDL_generate(ingame);
+	SDL_newSprite(ingame, "drag.png", colorGreenLight, SPRITE_H, SPRITE_W, offsetX(tMap), offsetY() / 2, 1, 1, 0);
+	int id = (ingame->nbSprite)-1;
+	fprintf(stderr, "%i\n", id );
+
+
+
+	moveSpriteTo(ingame, tMap, 0, 0, 1);
+	SDL_Delay(1000);
+	moveSpriteTo(ingame, tMap, 0, 1, 1);
+	SDL_Delay(1000);
+	moveSpriteTo(ingame, tMap, 0, 2, 1);
+	SDL_Delay(1000);
+	moveSpriteTo(ingame, tMap, 0, 3, 1);
+	SDL_Delay(1000);
+	moveSpriteTo(ingame, tMap, 0, 4, 1);
+	SDL_Delay(1000);
+	moveSpriteTo(ingame, tMap, 0, 5, 1);
+
+
 
 	while(1){
 
 		dragNdrop(ingame, diamond);
 		getIndexMap(tMap, SDL_getmousex(), SDL_getmousey() , &x, &y);
-		printf("x: %i y: %i\n", x, y);
-		if (SDL_isKeyPressed(SDLK_UP)) {
+		// printf("x: %i y: %i\n", x, y);
 
-		}
 		// If user request exit, we need to quit while()
+		if (SDL_isKeyPressed(SDLK_q)) break;
 		if (SDL_requestExit()) break;
 
 	}
