@@ -284,6 +284,8 @@ void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 			SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 2, ++currentAnim, 0); //bas gauche
 		}else if(to == DOWN_RIGHT){
 	  	SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 3, ++currentAnim, 0); //bas droite
+		}else{
+			nbAnim = nbAnimMax;
 		}
 
 		nbAnim++;
