@@ -8,6 +8,10 @@
 #define TILE_W 96 /**< Largeur d'une tile */
 
 #define N 11 /**< Taille de la map */
+#define DOWN_RIGHT 1
+#define DOWN_LEFT 2
+#define UP_LEFT 3
+#define UP_RIGHT 4
 
 typedef enum{diamond, staggered, slide}type_Map;
 
@@ -261,7 +265,7 @@ void dragNdrop(t_context * context, type_Map tMap){
 
 }
 
-void moveSpriteTo(t_context * context, type_Map tMap, char to[], int idSprite ){
+void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 
 	int nbAnimMax = 5; // TWEAK HERE : nombre d'animation pour parcourir 1 case
 	int pixelByAnim = 10; // TWEAK HERE : nombre de pixel par animation
@@ -272,18 +276,18 @@ void moveSpriteTo(t_context * context, type_Map tMap, char to[], int idSprite ){
 
 	while (nbAnim != nbAnimMax) {
 
-		if(!strcmp(to,"UP_LEFT")){
+		if(to == UP_LEFT){
     	SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut gauche
-		}else if(!strcmp(to,"UP_RIGHT")){
-	    SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut droite
-		}else if(!strcmp(to,"DOWN_LEFT")){
+		}else if(to == UP_RIGHT){
+	  	SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut droite
+		}else if(to == DOWN_LEFT){
 			SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 2, ++currentAnim, 0); //bas gauche
-		}else if(!strcmp(to,"DOWN_RIGHT")){
-	    SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 3, ++currentAnim, 0); //bas droite
+		}else if(to == DOWN_RIGHT){
+	  	SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 3, ++currentAnim, 0); //bas droite
 		}
 
 		nbAnim++;
-		if (currentAnim+1 > maxAnimSet) {
+		if (currentAnim+1 >= maxAnimSet) {
 			currentAnim = 0;
 		}
 
@@ -311,10 +315,10 @@ int main(){
 
 	SDL_generate(ingame);
 
-	moveSpriteTo(ingame, tMap, "DOWN_RIGHT", id );
-	moveSpriteTo(ingame, tMap, "DOWN_LEFT", id );
-	moveSpriteTo(ingame, tMap, "UP_LEFT", id );
-	moveSpriteTo(ingame, tMap, "UP_RIGHT", id );
+	moveSpriteTo(ingame, tMap, DOWN_RIGHT, id );
+	moveSpriteTo(ingame, tMap, DOWN_LEFT, id );
+	moveSpriteTo(ingame, tMap, UP_LEFT, id );
+	moveSpriteTo(ingame, tMap, UP_RIGHT, id );
 
 	while(1){
 
