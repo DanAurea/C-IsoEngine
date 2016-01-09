@@ -171,16 +171,16 @@ void showCursor(t_context * context, type_Map tMap, int x, int y){
  * @param context Contexte dans lequel dessiner
  * @param tMap    Type de la map
  */
-void showMouseCursor(t_context * context, type_Map tMap){
+int showMouseCursor(t_context * context, type_Map tMap){
 	int x = 0, y = 0, mX = 0, mY = 0;
 
 	if(idCursor == -1){
 		showCursor(context, tMap, x, y); // Affiche en surbillance la zone pointée
-		return ;
+		return 1;
 	}
-		
-	if(idCursor < 0) return;
-	
+
+	if(idCursor < 0) return 0;
+
 	getIndexMap(tMap, context->contextImg[idCursor].x + context->contextImg[idCursor].buffer->w / 2, context->contextImg[idCursor].y + context->contextImg[idCursor].buffer->h / 2, &x, &y);
 	getIndexMap(tMap,  SDL_getmousex(),  SDL_getmousey(), &mX, &mY);
 
@@ -188,10 +188,10 @@ void showMouseCursor(t_context * context, type_Map tMap){
 
 		if(mX >= 0 && mX < N && mY >= 0 && mY < N){
 				showCursor(context, tMap, mX, mY); // Affiche en surbillance la zone pointée
-				SDL_generate(context);
+				return 1;
 		}
 	}
-	
+	return 0;
 }
 
 /**
@@ -308,7 +308,7 @@ void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 		SDL_generate(context);
 		SDL_Delay(180);
 	}
-	
+
 }
 
 
@@ -360,6 +360,11 @@ int main(){
 	while(1){
 
 		dragNdrop(ingame, diamond);
+
+		//Display current tile on map
+		if(showMouseCursor(ingame, tMap)){
+			SDL_generate(ingame);
+		}
 
 		// If user request exit, we need to quit while()
 		if (SDL_isKeyPressed(SDLK_q)) break;
