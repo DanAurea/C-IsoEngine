@@ -16,8 +16,6 @@
 typedef enum{diamond, staggered, slide}type_Map;
 
 int idCursor = -1; /**< Identifiant du curseur */
-int mX = -1; /**< Position X à t-1 de la souris*/
-int mY = -1; /**< Position Y à t-1 de la souris*/
 
 /**
  * Convertis les coordonnées cartésiennes en coordonnées isométriques
@@ -74,6 +72,7 @@ void getIndexMap(type_Map tMap, int posX, int posY, int * x, int * y){
 	posX -= offsetX(tMap);
 
 	if(tMap == diamond){
+
 		posX -= TILE_W / 2; // Diamond map
 		posY -= offsetY();
 
@@ -159,13 +158,12 @@ void showCursor(t_context * context, type_Map tMap, int x, int y){
 	posY += offsetY();
 
 	if(idCursor == - 1){
+		idCursor = context->nbImg;
 		SDL_newImage(context, NULL, "cursor.png", posX, posY); // Initialise le curseur si pas encore dessiné
-		idCursor = context->nbImg - 1;
 	}else{
 		SDL_editImage(context, idCursor, posX, posY); // Met à jour la position du curseur
 	}
 
-	SDL_generate(context);
 }
 
 /**
@@ -174,22 +172,25 @@ void showCursor(t_context * context, type_Map tMap, int x, int y){
  * @param tMap    Type de la map
  */
 void showMouseCursor(t_context * context, type_Map tMap){
-	int mouseX, mouseY;
-	int x = - 1, y = -1;
+	int x = 0, y = 0, mX = 0, mY = 0;
 
-	mouseX = SDL_getmousex(); // Récupère la position actuelle X de la souris
-	mouseY = SDL_getmousey(); // Récupère la position actuelle Y de la souris
-
-	getIndexMap(tMap, mouseX, mouseY, &x, &y);
-
-	if(x >= 0 && x < N && y >= 0 && y < N && (mX != x || mY != y)){
-			showCursor(context, tMap, x, y); // Affiche en surbillance la zone pointée
-
-			mX = x; // Stocke la position actuelle X de la souris
-			mY = y; // Stocke la position actuelle Y de la souris
-	}else{
-		SDL_Delay(50);
+	if(idCursor == -1){
+		showCursor(context, tMap, x, y); // Affiche en surbillance la zone pointée
+		return ;
 	}
+		
+	if(idCursor < 0) return;
+	
+	getIndexMap(tMap, context->contextImg[idCursor].x + context->contextImg[idCursor].buffer->w / 2, context->contextImg[idCursor].y + context->contextImg[idCursor].buffer->h / 2, &x, &y);
+	getIndexMap(tMap,  SDL_getmousex(),  SDL_getmousey(), &mX, &mY);
+
+	if(mX != x || mY != y){
+
+		if(mX >= 0 && mX < N && mY >= 0 && mY < N){
+				showCursor(context, tMap, mX, mY); // Affiche en surbillance la zone pointée
+		}
+	}
+	
 }
 
 /**
@@ -234,8 +235,9 @@ void dragNdrop(t_context * context, type_Map tMap){
 			if(overObj >= 0){
 				while(mousePressed){
 					SDL_drag(context, SPRITE, overObj); // Glisse l'objet
-					SDL_Delay(20);
+					showMouseCursor(context, tMap);
 					mousePressed = SDL_isMousePressed(SDL_BUTTON_LEFT);
+					SDL_Delay(20);
 				}
 
 				mousePressed = -1;
@@ -277,13 +279,21 @@ void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 	while (nbAnim != nbAnimMax) {
 
 		if(to == UP_LEFT){
-    	SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut gauche
+    		
+    		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut gauche
+		
 		}else if(to == UP_RIGHT){
-	  	SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut droite
+	  		
+	  		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut droite
+		
 		}else if(to == DOWN_LEFT){
+			
 			SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 2, ++currentAnim, 0); //bas gauche
+		
 		}else if(to == DOWN_RIGHT){
-	  	SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 3, ++currentAnim, 0); //bas droite
+	  		
+	  		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 3, ++currentAnim, 0); //bas droite
+		
 		}else{
 			nbAnim = nbAnimMax;
 		}
@@ -294,13 +304,14 @@ void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 		}
 
 		SDL_generate(context);
-		SDL_Delay(400);
+		SDL_Delay(180);
 	}
+	
 }
 
 
 int main(){
-	int x = 0, y = 0;
+	int x = 0, y = 0, posX = 0, posY = 0;
 	type_Map tMap = diamond;
 
 	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
@@ -317,6 +328,12 @@ int main(){
 
 	SDL_generate(ingame);
 
+
+	toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
+
+	posX += offsetX(tMap);
+	posY += offsetY();
+
 	moveSpriteTo(ingame, tMap, DOWN_RIGHT, id );
 	moveSpriteTo(ingame, tMap, DOWN_LEFT, id );
 	moveSpriteTo(ingame, tMap, UP_LEFT, id );
@@ -325,13 +342,10 @@ int main(){
 	while(1){
 
 		dragNdrop(ingame, diamond);
-		getIndexMap(tMap, SDL_getmousex(), SDL_getmousey() , &x, &y);
-		// printf("x: %i y: %i\n", x, y);
 
 		// If user request exit, we need to quit while()
 		if (SDL_isKeyPressed(SDLK_q)) break;
 		if (SDL_requestExit()) break;
-
 	}
 
 	// Cleanup ingame context
