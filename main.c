@@ -171,16 +171,16 @@ void showCursor(t_context * context, type_Map tMap, int x, int y){
  * @param context Contexte dans lequel dessiner
  * @param tMap    Type de la map
  */
-void showMouseCursor(t_context * context, type_Map tMap){
+int showMouseCursor(t_context * context, type_Map tMap){
 	int x = 0, y = 0, mX = 0, mY = 0;
 
 	if(idCursor == -1){
 		showCursor(context, tMap, x, y); // Affiche en surbillance la zone pointée
-		return ;
+		return 1;
 	}
-		
-	if(idCursor < 0) return;
-	
+
+	if(idCursor < 0) return 0;
+
 	getIndexMap(tMap, context->contextImg[idCursor].x + context->contextImg[idCursor].buffer->w / 2, context->contextImg[idCursor].y + context->contextImg[idCursor].buffer->h / 2, &x, &y);
 	getIndexMap(tMap,  SDL_getmousex(),  SDL_getmousey(), &mX, &mY);
 
@@ -188,9 +188,10 @@ void showMouseCursor(t_context * context, type_Map tMap){
 
 		if(mX >= 0 && mX < N && mY >= 0 && mY < N){
 				showCursor(context, tMap, mX, mY); // Affiche en surbillance la zone pointée
+				return 1;
 		}
 	}
-	
+	return 0;
 }
 
 /**
@@ -279,21 +280,13 @@ void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 	while (nbAnim != nbAnimMax) {
 
 		if(to == UP_LEFT){
-    		
     		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut gauche
-		
 		}else if(to == UP_RIGHT){
-	  		
 	  		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut droite
-		
 		}else if(to == DOWN_LEFT){
-			
 			SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 2, ++currentAnim, 0); //bas gauche
-		
 		}else if(to == DOWN_RIGHT){
-	  		
 	  		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 3, ++currentAnim, 0); //bas droite
-		
 		}else{
 			nbAnim = nbAnimMax;
 		}
@@ -306,12 +299,12 @@ void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 		SDL_generate(context);
 		SDL_Delay(180);
 	}
-	
+
 }
 
 
 int main(){
-	int x = 0, y = 0, posX = 0, posY = 0;
+	int posX = 0, posY = 0;
 	type_Map tMap = diamond;
 
 	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
@@ -342,6 +335,11 @@ int main(){
 	while(1){
 
 		dragNdrop(ingame, diamond);
+
+		//Display current tile on map
+		if(showMouseCursor(ingame, tMap)){
+			SDL_generate(ingame);
+		}
 
 		// If user request exit, we need to quit while()
 		if (SDL_isKeyPressed(SDLK_q)) break;
