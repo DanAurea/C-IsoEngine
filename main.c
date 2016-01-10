@@ -321,16 +321,15 @@ int main(){
 
 	SDL_generate(ingame);
 
-
 	toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
 
 	posX += offsetX(tMap);
 	posY += offsetY();
 
-	moveSpriteTo(ingame, tMap, DOWN_RIGHT, id );
-	moveSpriteTo(ingame, tMap, DOWN_LEFT, id );
-	moveSpriteTo(ingame, tMap, UP_LEFT, id );
-	moveSpriteTo(ingame, tMap, UP_RIGHT, id );
+	moveSpriteTo(ingame, tMap, DOWN_RIGHT, 0 );
+	moveSpriteTo(ingame, tMap, DOWN_LEFT, 0 );
+	moveSpriteTo(ingame, tMap, UP_LEFT, 0 );
+	moveSpriteTo(ingame, tMap, UP_RIGHT, 0 );
 
 	while(1){
 
