@@ -99,24 +99,24 @@ void drawTile(t_context * context , type_Map tMap, int posX, int posY){
 	posY += offsetY();
 
 	if(y == N-1 || ( x == 0 && (tMap == slide || tMap == staggered) )){
-		SDL_newImage(context, NULL, "base_Cube.png", posX, posY);
+		SDL_newImage(context, NULL, "base_Cube.png", posX, posY,0);
 	}
 
 	if(tMap == diamond){
 		if(x == N-1){
-			SDL_newImage(context, NULL, "base_Cube.png", posX, posY);
+			SDL_newImage(context, NULL, "base_Cube.png", posX, posY,0);
 		}else{
-			SDL_newImage(context, NULL, "base_Tile.png", posX, posY);
+			SDL_newImage(context, NULL, "base_Tile.png", posX, posY,0);
 		}
 	}else if(tMap == slide){
 		if(x != 0){
-			SDL_newImage(context, NULL, "base_Tile.png", posX, posY);
+			SDL_newImage(context, NULL, "base_Tile.png", posX, posY, 0);
 		}
 	}else if(tMap == staggered){
 		if((x == N - 1 && y % 2 != 0)){
-			SDL_newImage(context, NULL, "base_Cube.png", posX, posY);
+			SDL_newImage(context, NULL, "base_Cube.png", posX, posY, 0);
 		}else{
-			SDL_newImage(context, NULL, "base_Tile.png", posX, posY);
+			SDL_newImage(context, NULL, "base_Tile.png", posX, posY, 0);
 		}
 	}
 
@@ -136,7 +136,7 @@ void drawDecor(t_context * context , type_Map tMap, int posX, int posY){
 	posX += offsetX(tMap);
 	posY += offsetY() - HEIGHT_DECOR / 2;
 
-	SDL_newImage(context, NULL, "rock.png", posX, posY);
+	SDL_newImage(context, NULL, "rock.png", posX, posY, 200);
 }
 
 /**
@@ -159,9 +159,9 @@ void showCursor(t_context * context, type_Map tMap, int x, int y){
 
 	if(idCursor == - 1){
 		idCursor = context->nbImg;
-		SDL_newImage(context, NULL, "cursor.png", posX, posY); // Initialise le curseur si pas encore dessiné
+		SDL_newImage(context, NULL, "cursor.png", posX, posY, 1); // Initialise le curseur si pas encore dessiné
 	}else{
-		SDL_editImage(context, idCursor, posX, posY); // Met à jour la position du curseur
+		SDL_editImage(context, idCursor, posX, posY, 1); // Met à jour la position du curseur
 	}
 
 }
@@ -212,7 +212,7 @@ void drawMap(t_context * context, type_Map tMap){
 				drawTile(context, tMap, posX, posY);
 
 				if(x % 2 == 0 && y % 2 == 0){
-					drawDecor(context, tMap, posX, posY);
+					drawDecor(context, tMap, posX, posY);		
 				}
 
 			}
@@ -234,6 +234,7 @@ void dragNdrop(t_context * context, type_Map tMap){
 			overObj = SDL_ismouseover(context, SPRITE);
 
 			if(overObj >= 0){
+				
 				while(mousePressed){
 					SDL_drag(context, SPRITE, overObj); // Glisse l'objet
 					showMouseCursor(context, tMap);
@@ -280,13 +281,21 @@ void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 	while (nbAnim != nbAnimMax) {
 
 		if(to == UP_LEFT){
-    		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut gauche
+    		
+    		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) ,context->contextLayer[context->contextSprite[idSprite].idLayer].z_index, 4, ++currentAnim, 0); //haut gauche
+		
 		}else if(to == UP_RIGHT){
-	  		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) , 4, ++currentAnim, 0); //haut droite
+	  		
+	  		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y - pixelByAnim / 2) ,context->contextLayer[context->contextSprite[idSprite].idLayer].z_index, 4, ++currentAnim, 0); //haut droite
+		
 		}else if(to == DOWN_LEFT){
-			SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 2, ++currentAnim, 0); //bas gauche
+			
+			SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x - pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) ,context->contextLayer[context->contextSprite[idSprite].idLayer].z_index, 2, ++currentAnim, 0); //bas gauche
+		
 		}else if(to == DOWN_RIGHT){
-	  		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) , 3, ++currentAnim, 0); //bas droite
+	  		
+	  		SDL_editSprite(context, idSprite, (context->contextSprite[idSprite].x + pixelByAnim ) , (context->contextSprite[idSprite].y + pixelByAnim / 2) ,context->contextLayer[context->contextSprite[idSprite].idLayer].z_index, 3, ++currentAnim, 0); //bas droite
+		
 		}else{
 			nbAnim = nbAnimMax;
 		}
@@ -314,9 +323,9 @@ int main(){
 
 	drawMap(ingame, tMap);
 
-	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
+	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 5, 1, 1, 0);
 
-	SDL_newSprite(ingame, "drag.png", colorGreenLight, 96, 96, offsetX(tMap), offsetY() / 2, 1, 1, 0);
+	SDL_newSprite(ingame, "drag.png", colorGreenLight, 96, 96, offsetX(tMap), offsetY() / 2,10, 1, 1, 0);
 	int id = (ingame->nbSprite)-1;
 
 	SDL_generate(ingame);
@@ -331,6 +340,7 @@ int main(){
 	moveSpriteTo(ingame, tMap, UP_LEFT, 0 );
 	moveSpriteTo(ingame, tMap, UP_RIGHT, 0 );
 
+
 	while(1){
 
 		dragNdrop(ingame, diamond);
@@ -343,6 +353,7 @@ int main(){
 		// If user request exit, we need to quit while()
 		if (SDL_isKeyPressed(SDLK_q)) break;
 		if (SDL_requestExit()) break;
+
 	}
 
 	// Cleanup ingame context
