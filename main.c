@@ -120,6 +120,7 @@ void drawTile(t_context * context , type_Map tMap, int posX, int posY){
 		}
 	}
 
+	SDL_setOnLayer(context, IMG, context->nbImg - 1, 1);
 }
 
 /**
@@ -137,6 +138,8 @@ void drawDecor(t_context * context , type_Map tMap, int posX, int posY){
 	posY += offsetY() - HEIGHT_DECOR / 2;
 
 	SDL_newImage(context, NULL, "rock.png", posX, posY);
+	SDL_setOnLayer(context, IMG, context->nbImg - 1, 5);	
+
 }
 
 /**
@@ -164,6 +167,7 @@ void showCursor(t_context * context, type_Map tMap, int x, int y){
 		SDL_editImage(context, idCursor, posX, posY); // Met à jour la position du curseur
 	}
 
+	SDL_setOnLayer(context, IMG, idCursor, 2);
 }
 
 /**
@@ -212,7 +216,7 @@ void drawMap(t_context * context, type_Map tMap){
 				drawTile(context, tMap, posX, posY);
 
 				if(x % 2 == 0 && y % 2 == 0){
-					drawDecor(context, tMap, posX, posY);		
+					drawDecor(context, tMap, posX, posY);	
 				}
 
 			}
@@ -313,7 +317,6 @@ void moveSpriteTo(t_context * context, type_Map tMap, int to, int idSprite ){
 
 
 int main(){
-	int posX = 0, posY = 0;
 	type_Map tMap = diamond;
 
 	SDL_initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, 0, "Tactics Arena", "M_ICON.png", 1, "global.ttf", 20, 0);
@@ -326,19 +329,15 @@ int main(){
 	SDL_newSprite(ingame, "rock.png", colorGreenLight, HEIGHT_DECOR, TILE_W, 288, 128, 1, 1, 0);
 
 	SDL_newSprite(ingame, "drag.png", colorGreenLight, 96, 96, offsetX(tMap), offsetY() / 2, 1, 1, 0);
-	int id = (ingame->nbSprite)-1;
+	
+	SDL_setOnLayer(ingame, SPRITE, 1, 10);
 
 	SDL_generate(ingame);
 
-	toIso(tMap, &posX, &posY); // Convertis les coordonnées en coordonnées isométriques
-
-	posX += offsetX(tMap);
-	posY += offsetY();
-
-	moveSpriteTo(ingame, tMap, DOWN_RIGHT, id );
-	moveSpriteTo(ingame, tMap, DOWN_LEFT, id );
-	moveSpriteTo(ingame, tMap, UP_LEFT, id );
-	moveSpriteTo(ingame, tMap, UP_RIGHT, id );
+	moveSpriteTo(ingame, tMap, DOWN_RIGHT, 1 );
+	moveSpriteTo(ingame, tMap, DOWN_LEFT, 1 );
+	moveSpriteTo(ingame, tMap, UP_LEFT, 1);
+	moveSpriteTo(ingame, tMap, UP_RIGHT,1 );
 
 	while(1){
 
